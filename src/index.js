@@ -1,12 +1,18 @@
 const {ApolloServer, AuthenticationError} = require('apollo-server')
 const typeDefs = require('./typedefs')
 const resolvers = require('./resolvers')
+const {FormatDateDirective, AuthenticationDirective, AuthorizationDirective} = require('./directives')
 const {createToken, getUserFromToken} = require('./auth')
 const db = require('./db')
 
 const server = new ApolloServer({
   typeDefs,
   resolvers,
+  schemaDirectives: {
+    formatDate: FormatDateDirective,
+    authenticated: AuthenticationDirective, 
+    authorized: AuthorizationDirective
+  },
   formatError(error) {
     // ability to format errors or create owwn error classes
     if (error instanceof AuthenticationError) {
