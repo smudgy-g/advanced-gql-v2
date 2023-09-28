@@ -3,6 +3,24 @@ const {models} = require('./db')
 const secret = 'catpack'
 
 /**
+ * AUTHORISATION
+ * Should not be coupled to a resolver,
+ * Can provide fieldd level custom rules,
+ * Can authorise some or your schema and not at all
+ * 
+ * AUTHENTICATION
+ * Provides the user to resolvers,
+ * Can protect some of your Schema and not all of it,
+ * Can provide field level protection
+ */
+
+/**
+ * Best way to auth is the when creating the context when creating the apollo server. 
+ * Can access the context from within the resolver easily with out locking down the
+ * whole server and setting up middleware to attach the auth token to request body.
+ */
+
+/**
  * takes a user object and creates  jwt out of it
  * using user.id and user.role
  * @param {Object} user the user to create a jwt for
