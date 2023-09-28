@@ -46,10 +46,13 @@ const getUserFromToken = token => {
 /**
  * checks if the user is on the context object
  * continues to the next resolver if true
- * @param {Function} next next resolver function ro run
+ * @param {Function} next next resolver function to run
  */
 const authenticated = next => (root, args, context, info) => {
-  
+  if (!context.user) {
+    throw new TokenExpiredError('Not authorized.');
+  }
+  return next(root, args, context, info);
 }
 
 /**
@@ -59,7 +62,10 @@ const authenticated = next => (root, args, context, info) => {
  * @param {Function} next next resolver function to run
  */
 const authorized = (role, next) => (root, args, context, info) => {
-  
+  if (!context.user.role !== role) {
+    throw new Error(`Must be a ${role}.`)
+  }
+  return next(root, args, context, info)
 }
 
 module.exports = {

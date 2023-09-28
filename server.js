@@ -1,5 +1,9 @@
 const gql = require('graphql-tag');
-const {ApolloServer} = require('apollo-server');
+const {ApolloServer, PubSub} = require('apollo-server');
+
+// publish subscribe protocol
+const pubSub = new PubSub();
+const NEW_ITEM_EVENT = 'NEW_ITEM';
 
 const typeDefs = gql`
   type User {
@@ -14,6 +18,10 @@ const typeDefs = gql`
     theme: String!
   }
 
+  type Item {
+    task: String!
+  }
+
   input NewSettingsInput {
     user: ID!
     theme: String!
@@ -26,6 +34,11 @@ const typeDefs = gql`
 
   type Mutation {
     settings(input: NewSettingsInput): Settings!
+    createItem(task: String!): Item!
+  }
+
+  type Subscription {
+    newItem: Item!
   }
 `
 
@@ -49,6 +62,17 @@ const resolvers = {
   Mutation: {
     settings(_, {input}) {
       return input
+    },
+    createItem(_, {task}) {
+      const item = {task};
+      pubSub.publish(NEW_ITEM_EVENT, {newItem: item});
+      return item;
+    }
+  },
+
+  Subscription: {
+    newItem: {
+      subscribe: () => pubSub.asyncIterator(NEW_ITEM_EVENT)
     }
   },
   // Resolver for relationship between Settigns and user
@@ -65,7 +89,17 @@ const resolvers = {
 
 const server = new ApolloServer({
   typeDefs,
-  resolvers
+  resolvers,
+  context({connection}) {
+    if (connection) {
+      return {...connection.context}
+    }
+  },
+  subscriptions: {
+    onConnect(params) {
+      
+    }
+  }
 });
 
 server.listen().then(({url}) => console.log(`Server live on ${url}`));
